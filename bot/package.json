@@ -1,0 +1,18 @@
+{
+  "name": "synape-earn-bot",
+  "version": "1.0.0",
+  "description": "SYNAPE EARN Telegram Bot with Referral System",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js",
+    "dev": "nodemon bot.js"
+  },
+  "dependencies": {
+    "node-telegram-bot-api": "^0.64.0",
+    "uuid": "^9.0.1"
+  },
+  "keywords": ["telegram", "bot", "referral", "earning"],
+  "author": "SYNAPE EARN",
+  "license": "MIT"
+}
+

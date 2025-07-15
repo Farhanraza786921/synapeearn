@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYNAPE EARN - Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        [v-cloak] { display: none; }
+        body { background-color: #0f172a; }
+    </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen">
+    <div id="app" v-cloak>
+        <!-- Login Screen -->
+        <div v-if="!isLoggedIn" class="min-h-screen flex items-center justify-center bg-slate-900">
+            <div class="bg-slate-800 p-8 rounded-lg shadow-2xl w-full max-w-md border border-slate-700">
+                <div class="text-center mb-8">
+                    <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <h1 class="text-2xl font-bold text-white">SYNAPE EARN</h1>
+                    <p class="text-slate-400">Admin Panel</p>
+                </div>
+                
+                <form @submit.prevent="login">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Username</label>
+                        <input 
+                            v-model="loginForm.username" 
+                            type="text" 
+                            required
+                            class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="Enter username"
+                        >
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Password</label>
+                        <input 
+                            v-model="loginForm.password" 
+                            type="password" 
+                            required
+                            class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="Enter password"
+                        >
+                    </div>
+                    
+                    <button 
+                        type="submit" 
+                        :disabled="isLoading"
+                        class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white font-medium py-2 px-4 rounded-md transition duration-200"
+                    >
+                        {{ isLoading ? 'Logging in...' : 'Login' }}
+                    </button>
+                    
+                    <div v-if="loginError" class="mt-4 p-3 bg-red-900 border border-red-700 rounded-md">
+                        <p class="text-red-300 text-sm">{{ loginError }}</p>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div v-if="isLoggedIn" class="min-h-screen bg-slate-900">
+            <!-- Header -->
+            <header class="bg-slate-800 border-b border-slate-700 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <h1 class="text-xl font-semibold text-white">SYNAPE EARN Admin</h1>
+                    </div>
+                    
+                    <div class="flex items-center space-x-3">
+                        <button 
+                            @click="refreshData"
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-200"
+                        >
+                            🔄 Refresh
+                        </button>
+                        <button 
+                            @click="logout"
+                            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-200"
+                        >
+                            🚪 Logout
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main class="p-6">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-slate-800 border border-slate-700 rounded-lg p-6">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-slate-400">Total Users</p>
+                                <p class="text-2xl font-bold text-white">{{ stats.totalUsers }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-slate-800 border border-slate-700 rounded-lg p-6">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-slate-400">Active Users</p>
+                                <p class="text-2xl font-bold text-white">{{ stats.activeUsers }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-slate-800 border border-slate-700 rounded-lg p-6">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-yellow-600 rounded-lg flex items-center justify-center">
+                                <span class="text-white font-bold">₹</span>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-slate-400">Total Earnings</p>
+                                <p class="text-2xl font-bold text-white">₹{{ stats.totalEarnings }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-slate-800 border border-slate-700 rounded-lg p-6">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-slate-400">Pending Withdrawals</p>
+                                <p class="text-2xl font-bold text-white">{{ stats.pendingWithdrawals }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="bg-slate-800 border border-slate-700 rounded-lg">
+                    <div class="border-b border-slate-700">
+                        <nav class="flex space-x-8 px-6">
+                            <button 
+                                @click="activeTab = 'users'"
+                                :class="activeTab === 'users' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-400 hover:text-slate-300'"
+                                class="py-4 px-1 border-b-2 font-medium text-sm transition duration-200"
+                            >
+                                👥 Users Management
+                            </button>
+                            <button 
+                                @click="activeTab = 'withdrawals'"
+                                :class="activeTab === 'withdrawals' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-400 hover:text-slate-300'"
+                                class="py-4 px-1 border-b-2 font-medium text-sm transition duration-200"
+                            >
+                                💸 Withdrawal Requests
+                            </button>
+                        </nav>
+                    </div>
+
+                    <div class="p-6">
+                        <!-- Users Tab -->
+                        <div v-if="activeTab === 'users'">
+                            <div class="flex justify-between items-center mb-6">
+                                <h2 class="text-xl font-semibold text-white">User Management</h2>
+                                <input 
+                                    v-model="searchQuery"
+                                    type="text" 
+                                    placeholder="Search users..."
+                                    class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                            </div>
+                            
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full">
+                                    <thead>
+                                        <tr class="border-b border-slate-700">
+                                            <th class="text-left py-3 px-4 font-medium text-slate-300">USER</th>
+                                            <th class="text-left py-3 px-4 font-medium text-slate-300">REFERRALS</th>
+                                            <th class="text-left py-3 px-4 font-medium text-slate-300">BALANCE</th>
+                                            <th class="text-left py-3 px-4 font-medium text-slate-300">UPI ID</th>
+                                            <th class="text-left py-3 px-4 font-medium text-slate-300">STATUS</th>
+                                            <th class="text-left py-3 px-4 font-medium text-slate-300">ACTIONS</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="user in filteredUsers" :key="user.telegramId" class="border-b border-slate-700 hover:bg-slate-700">
+                                            <td class="py-3 px-4">
+                                                <div>
+                                                    <div class="font-medium text-white">{{ user.firstName }} {{ user.lastName }}</div>
+                                                    <div class="text-sm text-slate-400">@{{ user.username || 'N/A' }}</div>
+                                                    <div class="text-xs text-slate-500">ID: {{ user.telegramId }}</div>
+                                                </div>
+                                            </td>
+                                            <td class="py-3 px-4 text-slate-300">{{ user.referredUsers ? user.referredUsers.length : 0 }}</td>
+                                            <td class="py-3 px-4 text-slate-300">₹{{ user.walletBalance || 0 }}</td>
+                                            <td class="py-3 px-4 text-slate-300">{{ user.upiId || 'Not set' }}</td>
+                                            <td class="py-3 px-4">
+                                                <span :class="getStatusColor(user.isActive)" class="px-2 py-1 rounded-full text-xs font-medium">
+                                                    {{ user.isActive ? 'Active' : 'Inactive' }}
+                                                </span>
+                                            </td>
+                                            <td class="py-3 px-4">
+                                                <div class="flex space-x-2">
+                                                    <button 
+                                                        @click="editUser(user)"
+                                                        class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs transition duration-200"
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button 
+                                                        @click="toggleUserStatus(user)"
+                                                        :class="user.isActive ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'"
+                                                        class="text-white px-3 py-1 rounded text-xs transition duration-200"
+                                                    >
+                                                        {{ user.isActive ? 'Deactivate' : 'Activate' }}
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr v-if="filteredUsers.length === 0">
+                                            <td colspan="6" class="py-8 text-center text-slate-400">
+                                                No users found
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Withdrawals Tab -->
+                        <div v-if="activeTab === 'withdrawals'">
+                            <h2 class="text-xl font-semibold text-white mb-6">Withdrawal Requests</h2>
+                            
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full">
+                                    <thead>
+                                        <tr class="border-b border-slate-700">
+                                            <th class="text-left py-3 px-4 font-medium text-slate-300">USER</th>
+                                            <th class="text-left py-3 px-4 font-medium text-slate-300">AMOUNT</th>
+                                            <th class="text-left py-3 px-4 font-medium text-slate-300">UPI ID</th>
+                                            <th class="text-left py-3 px-4 font-medium text-slate-300">DATE</th>
+                                            <th class="text-left py-3 px-4 font-medium text-slate-300">STATUS</th>
+                                            <th class="text-left py-3 px-4 font-medium text-slate-300">ACTIONS</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="withdrawal in withdrawalRequests" :key="withdrawal.id" class="border-b border-slate-700 hover:bg-slate-700">
+                                            <td class="py-3 px-4">
+                                                <div class="font-medium text-white">{{ withdrawal.userName }}</div>
+                                                <div class="text-xs text-slate-500">ID: {{ withdrawal.telegramId }}</div>
+                                            </td>
+                                            <td class="py-3 px-4 text-slate-300">₹{{ withdrawal.amount }}</td>
+                                            <td class="py-3 px-4 text-slate-300">{{ withdrawal.upiId }}</td>
+                                            <td class="py-3 px-4 text-slate-300">{{ formatDate(withdrawal.requestedAt) }}</td>
+                                            <td class="py-3 px-4">
+                                                <span :class="getStatusColor(withdrawal.status === 'approved')" class="px-2 py-1 rounded-full text-xs font-medium">
+                                                    {{ withdrawal.status }}
+                                                </span>
+                                            </td>
+                                            <td class="py-3 px-4">
+                                                <div v-if="withdrawal.status === 'pending'" class="flex space-x-2">
+                                                    <button 
+                                                        @click="approveWithdrawal(withdrawal)"
+                                                        class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs transition duration-200"
+                                                    >
+                                                        Approve
+                                                    </button>
+                                                    <button 
+                                                        @click="rejectWithdrawal(withdrawal)"
+                                                        class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs transition duration-200"
+                                                    >
+                                                        Reject
+                                                    </button>
+                                                </div>
+                                                <span v-else class="text-slate-500 text-xs">{{ withdrawal.status }}</span>
+                                            </td>
+                                        </tr>
+                                        <tr v-if="withdrawalRequests.length === 0">
+                                            <td colspan="6" class="py-8 text-center text-slate-400">
+                                                No withdrawal requests found
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Edit User Modal -->
+        <div v-if="showEditModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-slate-800 border border-slate-700 rounded-lg p-6 w-full max-w-md">
+                <h3 class="text-lg font-semibold text-white mb-4">Edit User</h3>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Wallet Balance</label>
+                        <input 
+                            v-model="editingUser.walletBalance" 
+                            type="number" 
+                            step="0.01"
+                            class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">UPI ID</label>
+                        <input 
+                            v-model="editingUser.upiId" 
+                            type="text"
+                            class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button 
+                        @click="showEditModal = false"
+                        class="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded-md transition duration-200"
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        @click="saveUser"
+                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition duration-200"
+                    >
+                        Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            data() {
+                return {
+                    isLoggedIn: false,
+                    isLoading: false,
+                    loginError: '',
+                    loginForm: {
+                        username: '',
+                        password: ''
+                    },
+                    activeTab: 'users',
+                    searchQuery: '',
+                    users: [],
+                    withdrawalRequests: [],
+                    stats: {
+                        totalUsers: 0,
+                        activeUsers: 0,
+                        totalEarnings: 0,
+                        pendingWithdrawals: 0
+                    },
+                    showEditModal: false,
+                    editingUser: {}
+                }
+            },
+            
+            mounted() {
+                this.init();
+            },
+            
+            methods: {
+                init() {
+                    // Check if already logged in
+                    if (localStorage.getItem('adminLoggedIn') === 'true') {
+                        this.isLoggedIn = true;
+                        this.loadData();
+                    }
+                },
+                
+                async login() {
+                    this.isLoading = true;
+                    this.loginError = '';
+                    
+                    try {
+                        const response = await fetch('/api/admin/login', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            credentials: 'include',
+                            body: JSON.stringify(this.loginForm)
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            this.isLoggedIn = true;
+                            localStorage.setItem('adminLoggedIn', 'true');
+                            this.loadData();
+                        } else {
+                            this.loginError = result.message || 'Invalid credentials';
+                        }
+                    } catch (error) {
+                        this.loginError = 'Connection error. Please try again.';
+                        console.error('Login error:', error);
+                    }
+                    
+                    this.isLoading = false;
+                },
+                
+                logout() {
+                    this.isLoggedIn = false;
+                    localStorage.removeItem('adminLoggedIn');
+                    this.loginForm = { username: '', password: '' };
+                },
+                
+                async loadData() {
+                    try {
+                        console.log('Loading admin data...');
+                        const response = await fetch('/api/admin/data', {
+                            credentials: 'include'
+                        });
+                        const data = await response.json();
+                        
+                        console.log('Admin data response:', data);
+                        
+                        if (data.success) {
+                            this.users = data.users || [];
+                            this.withdrawalRequests = data.withdrawalRequests || [];
+                            this.updateStats();
+                        } else {
+                            console.error('Error loading data:', data.message);
+                            if (response.status === 401) {
+                                this.logout();
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error loading data:', error);
+                    }
+                },
+                
+                updateStats() {
+                    this.stats.totalUsers = this.users.length;
+                    this.stats.activeUsers = this.users.filter(u => u.isActive).length;
+                    this.stats.totalEarnings = this.users.reduce((sum, u) => sum + (u.walletBalance || 0), 0);
+                    this.stats.pendingWithdrawals = this.withdrawalRequests.filter(w => w.status === 'pending').length;
+                },
+                
+                get filteredUsers() {
+                    if (!this.searchQuery) return this.users;
+                    
+                    const query = this.searchQuery.toLowerCase();
+                    return this.users.filter(user => 
+                        (user.firstName || '').toLowerCase().includes(query) ||
+                        (user.lastName || '').toLowerCase().includes(query) ||
+                        (user.username || '').toLowerCase().includes(query) ||
+                        user.telegramId.toString().includes(query)
+                    );
+                },
+                
+                editUser(user) {
+                    this.editingUser = { ...user };
+                    this.showEditModal = true;
+                },
+                
+                async saveUser() {
+                    try {
+                        const response = await fetch('/api/admin/update-user', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            credentials: 'include',
+                            body: JSON.stringify(this.editingUser)
+                        });
+                        
+                        if (response.ok) {
+                            this.showEditModal = false;
+                            this.loadData();
+                        }
+                    } catch (error) {
+                        console.error('Error updating user:', error);
+                    }
+                },
+                
+                async toggleUserStatus(user) {
+                    try {
+                        const response = await fetch('/api/admin/toggle-user-status', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            credentials: 'include',
+                            body: JSON.stringify({ telegramId: user.telegramId })
+                        });
+                        
+                        if (response.ok) {
+                            this.loadData();
+                        }
+                    } catch (error) {
+                        console.error('Error toggling user status:', error);
+                    }
+                },
+                
+                async approveWithdrawal(withdrawal) {
+                    try {
+                        const response = await fetch('/api/admin/approve-withdrawal', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            credentials: 'include',
+                            body: JSON.stringify({ withdrawalId: withdrawal.id, telegramId: withdrawal.telegramId })
+                        });
+                        
+                        if (response.ok) {
+                            this.loadData();
+                        }
+                    } catch (error) {
+                        console.error('Error approving withdrawal:', error);
+                    }
+                },
+                
+                async rejectWithdrawal(withdrawal) {
+                    try {
+                        const response = await fetch('/api/admin/reject-withdrawal', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            credentials: 'include',
+                            body: JSON.stringify({ withdrawalId: withdrawal.id, telegramId: withdrawal.telegramId })
+                        });
+                        
+                        if (response.ok) {
+                            this.loadData();
+                        }
+                    } catch (error) {
+                        console.error('Error rejecting withdrawal:', error);
+                    }
+                },
+                
+                async refreshData() {
+                    await this.loadData();
+                },
+                
+                formatDate(dateString) {
+                    return new Date(dateString).toLocaleDateString('en-IN', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                },
+                
+                getStatusColor(isActive) {
+                    if (isActive === true || isActive === 'approved') {
+                        return 'bg-green-900 text-green-300 border border-green-700';
+                    } else if (isActive === 'pending') {
+                        return 'bg-yellow-900 text-yellow-300 border border-yellow-700';
+                    } else {
+                        return 'bg-red-900 text-red-300 border border-red-700';
+                    }
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
+
